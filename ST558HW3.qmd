@@ -1,0 +1,142 @@
+---
+title: "ST558HW3"
+author: "Elvira McIntyre"
+format: html
+editor: visual
+---
+
+## Task 1: Control Flow Practice
+
+```{r}
+load("hw2_list.rda")
+```
+
+Create a new column in each data frame *of the list*:
+
+```{r}
+
+bp_list$treatment$status <- character(20)
+bp_list$placebo$status <- character(10)
+
+```
+
+For the non-placebo data frame (treatment) within the list, create a for loop and use if/then/else logic to create the status column's values.
+
+-   Optimal: bp ≤ 120
+
+-   Borderline: 120 \< bp ≤ 130
+
+-   High: \> 130
+
+```{r}
+
+for (i in 1:20){
+
+    if(bp_list$treatment$post_bp[i] <= 120) { 
+      bp_list$treatment$status[i] <- "Optimal"
+    } else if (bp_list$treatment$post_bp[i] > 120 & bp_list$treatment$post_bp[i] <= 130){
+      bp_list$treatment$status[i] <- "Borderline"
+    } else if (bp_list$treatment$post_bp[i] > 130) {
+      bp_list$treatment$status[i] <- "High"
+    } else {
+      "Error"
+    }
+  }
+
+head(bp_list$treatment)
+
+```
+
+Repeat the previous steps for the placebo:
+
+```{r}
+for (i in 1:10){
+
+    if(bp_list$placebo$post_bp[i] <= 120) { 
+      bp_list$placebo$status[i] <- "Optimal"
+    } else if (bp_list$placebo$post_bp[i] > 120 & bp_list$placebo$post_bp[i] <= 130){
+      bp_list$placebo$status[i] <- "Borderline"
+    } else if (bp_list$placebo$post_bp[i] > 130) {
+      bp_list$placebo$status[i] <- "High"
+    } else {
+      "Error"
+    }
+}
+
+head(bp_list$placebo)
+```
+
+## Task 2: Function Writing
+
+Intermediate R function that finds a summary of a numeric column) with the default value being set to mean.
+
+```{r}
+
+FindMeansFunction <- function(bp_list) {
+    # takes in two data frames - treatment and placebo
+    treatment_df <- bp_list$treatment
+    placebo_df   <- bp_list$placebo
+      
+    # compute means of numeric columns
+    treatment_means <- sapply(treatment_df[ , sapply(treatment_df, is.numeric)], mean, na.rm = TRUE)
+    placebo_means   <- sapply(placebo_df[ , sapply(placebo_df, is.numeric)], mean, na.rm = TRUE)
+      
+    # rename them
+    names(treatment_means) <- c("t_pre_bp", "t_post_bp", "t_diff_bp")
+    names(placebo_means)   <- c("p_pre_bp", "p_post_bp", "p_diff_bp")
+      
+      
+       # put everything into a list
+    list_of_means <- list(
+    treatment_means = treatment_means,
+    placebo_means   = placebo_means
+    )
+}
+Result <- FindMeansFunction(bp_list)
+Result
+    
+```
+
+6.  Final R function that finds the statistic of interest (as defined by the user input) for the pre, post, and diff columns of both data frames.
+
+```{r}
+    
+ GetSummaryStat <- function(bp_list, stat = "mean") {
+    my_fun <- get(stat)
+      
+    treatment_vals <- sapply(bp_list$treatment[ , sapply(bp_list$treatment, is.numeric)], my_fun, na.rm = TRUE)
+    placebo_vals   <- sapply(bp_list$placebo[ , sapply(bp_list$placebo, is.numeric)], my_fun, na.rm = TRUE)
+      
+    combined <- c(treatment_vals, placebo_vals)
+      
+    # rename results
+    names(combined) <- c("t_pre_bp", "t_post_bp", "t_diff_bp","p_pre_bp", "p_post_bp", "p_diff_bp")
+
+    # printing the statistic name
+    if (stat == "mean") {
+      print("Mean")
+    } else if (stat == "sd") {
+      print("Standard Deviation")
+    } else if (stat == "var") {
+      print("Variance")
+    } else if (stat == "min") {
+      print("Minimum")
+    } else if (stat == "max") {
+      print("Maximum")
+    } else {
+      print("Unknown")
+    }
+    
+      #return(combined)
+      return(as.list(combined))
+  }
+  
+```
+
+Apply the final R function:
+
+```{r}
+
+GetSummaryStat(bp_list, "var") 
+```
+
